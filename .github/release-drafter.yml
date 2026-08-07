@@ -1,0 +1,34 @@
+# .github/release-drafter.yml
+name-template: "v$RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
+categories:
+  - title: "🚀 Nuevas Funcionalidades (Features)"
+    labels:
+      - "enhancement"
+      - "feat"
+  - title: "🐛 Correcciones de Errores (Bug Fixes)"
+    labels:
+      - "bug"
+      - "fix"
+  - title: "📦 Otras modificaciones"
+    labels:
+      - "chore"
+      - "documentation"
+      - "deps"
+version-resolver:
+  major:
+    labels:
+      - "breaking-change"
+  minor:
+    labels:
+      - "enhancement"
+      - "feat"
+  patch:
+    labels:
+      - "bug"
+      - "fix"
+      - "chore"
+      - "deps"
+default-branch: "main"
+exclude-labels:
+  - "skip-changelog"
