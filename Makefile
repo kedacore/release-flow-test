@@ -4,7 +4,8 @@ SUFFIX ?=
 IMAGE_REGISTRY ?= ghcr.io
 IMAGE_REPO     ?= kedacore
 
-IMAGE_CONTROLLER = $(IMAGE_REGISTRY)/$(IMAGE_REPO)/release-flow-test$(SUFFIX):$(VERSION)
+IMAGE_CONTROLLER_BASE = $(IMAGE_REGISTRY)/$(IMAGE_REPO)/release-flow-test
+IMAGE_CONTROLLER = $(IMAGE_CONTROLLER_BASE):$(VERSION)
 
 BUILD_PLATFORMS ?= linux/amd64,linux/arm64,linux/s390x
 OUTPUT_TYPE     ?= registry
@@ -22,4 +23,4 @@ sign-images:
 	COSIGN_EXPERIMENTAL=1 cosign sign ${COSIGN_FLAGS} $(IMAGE_CONTROLLER)
 
 print-image-controller:
-	@echo $(IMAGE_CONTROLLER)
+	@echo $(IMAGE_CONTROLLER_BASE)
