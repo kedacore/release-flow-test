@@ -1,0 +1,49 @@
+name: Validate changelog entries on PR
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  changelog-validation:
+    name: Validate PR changelog entry
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Ensure a new changelog file exists
+        run: |
+          set -euo pipefail
+
+          base_sha="${{ github.event.pull_request.base.sha }}"
+          head_sha="${{ github.event.pull_request.head.sha }}"
+
+          added_files="$(git diff --name-status "$base_sha" "$head_sha" | awk '$1 == "A" {print $2}')"
+          new_entries="$(printf '%s\n' "$added_files" | grep -E '^\.changelog/[^/]+\.(ya?ml)$' || true)"
+
+          if [ -z "$new_entries" ]; then
+            echo "::error::No new changelog entry found in .changelog/. Add at least one new .yml or .yaml file."
+            exit 1
+          fi
+
+          echo "New changelog entries detected:"
+          echo "$new_entries"
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: tools/changelog/go.mod
+
+      - name: Run changelog validation
+        run: make changelog-validate
