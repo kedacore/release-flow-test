@@ -1,6 +1,12 @@
 # .github/release-drafter.yml
 name-template: "v$RESOLVED_VERSION"
 tag-template: "v$RESOLVED_VERSION"
+
+# Añadimos esto que es lo que exige release-drafter ahora:
+template: |
+  ## Cambios de esta versión
+  $CHANGES
+
 categories:
   - title: "🚀 Nuevas Funcionalidades (Features)"
     labels:
@@ -15,6 +21,7 @@ categories:
       - "chore"
       - "documentation"
       - "deps"
+
 version-resolver:
   major:
     labels:
@@ -29,6 +36,8 @@ version-resolver:
       - "fix"
       - "chore"
       - "deps"
+
 default-branch: "main"
+
 exclude-labels:
   - "skip-changelog"
