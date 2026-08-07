@@ -24,3 +24,30 @@ sign-images:
 
 print-image-controller:
 	@echo $(IMAGE_CONTROLLER_BASE)
+
+## Changelog targets to be moved to the new file + binaries
+
+CHANGELOG_DIR ?= tools/changelog
+CHANGELOG_ENTRIES_DIR ?= .changelog
+CHANGELOG_OUTPUT ?= CHANGELOG.md
+CHANGELOG_VERSION ?=
+CHANGELOG_TARGET_BRANCH ?= main
+CHANGELOG_ALLOWED_TYPES ?=
+
+CHANGELOG_ENTRY_NAME ?=
+
+changelog-create:
+	@if [ -z "$(CHANGELOG_ENTRY_NAME)" ]; then echo "CHANGELOG_ENTRY_NAME is required"; exit 1; fi
+	cd $(CHANGELOG_DIR) && go run . create "$(CHANGELOG_ENTRY_NAME)" --repo-root "$(CURDIR)" $(if $(CHANGELOG_ENTRIES_DIR),--entries-dir "$(CHANGELOG_ENTRIES_DIR)")
+
+changelog-test:
+	cd $(CHANGELOG_DIR) && go test ./...
+
+changelog-validate:
+	cd $(CHANGELOG_DIR) && go run . validate --repo-root "$(CURDIR)" $(if $(CHANGELOG_ENTRIES_DIR),--entries-dir "$(CHANGELOG_ENTRIES_DIR)") $(if $(CHANGELOG_ALLOWED_TYPES),--allowed-types "$(CHANGELOG_ALLOWED_TYPES)")
+
+changelog-generate-branch:
+	cd $(CHANGELOG_DIR) && go run . generate-branch --repo-root "$(CURDIR)" $(if $(CHANGELOG_ENTRIES_DIR),--entries-dir "$(CHANGELOG_ENTRIES_DIR)") --output "$(CHANGELOG_OUTPUT)" $(if $(CHANGELOG_VERSION),--version "$(CHANGELOG_VERSION)") $(if $(CHANGELOG_ALLOWED_TYPES),--allowed-types "$(CHANGELOG_ALLOWED_TYPES)")
+
+changelog-generate-main:
+	cd $(CHANGELOG_DIR) && go run . generate-main --repo-root "$(CURDIR)" $(if $(CHANGELOG_ENTRIES_DIR),--entries-dir "$(CHANGELOG_ENTRIES_DIR)") --target-branch "$(CHANGELOG_TARGET_BRANCH)" --output "$(CHANGELOG_OUTPUT)" $(if $(CHANGELOG_VERSION),--version "$(CHANGELOG_VERSION)") $(if $(CHANGELOG_ALLOWED_TYPES),--allowed-types "$(CHANGELOG_ALLOWED_TYPES)")
