@@ -2,42 +2,24 @@
 name-template: "v$RESOLVED_VERSION"
 tag-template: "v$RESOLVED_VERSION"
 
-# Añadimos esto que es lo que exige release-drafter ahora:
 template: |
-  ## Cambios de esta versión
+  ## Cambios en esta versión
   $CHANGES
 
 categories:
-  - title: "🚀 Nuevas Funcionalidades (Features)"
-    labels:
-      - "enhancement"
-      - "feat"
-  - title: "🐛 Correcciones de Errores (Bug Fixes)"
-    labels:
-      - "bug"
-      - "fix"
-  - title: "📦 Otras modificaciones"
-    labels:
-      - "chore"
-      - "documentation"
-      - "deps"
+  - title: "🚀 Nuevas Funcionalidades"
+    labels: ["enhancement", "feat"]
+  - title: "🐛 Bug Fixes"
+    labels: ["bug", "fix"]
+  - title: "📦 Otros cambios"
+    labels: ["chore", "deps", "documentation"]
 
 version-resolver:
   major:
-    labels:
-      - "breaking-change"
+    labels: ["breaking-change"]
   minor:
-    labels:
-      - "enhancement"
-      - "feat"
+    labels: ["enhancement", "feat"]
   patch:
-    labels:
-      - "bug"
-      - "fix"
-      - "chore"
-      - "deps"
+    labels: ["bug", "fix", "chore", "deps"]
 
-default-branch: "main"
-
-exclude-labels:
-  - "skip-changelog"
+exclude-labels: ["skip-changelog"]

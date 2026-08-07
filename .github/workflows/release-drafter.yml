@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 'release/v*'
   release:
     types: [published]
 
@@ -17,6 +18,12 @@ jobs:
       pull-requests: read
     runs-on: ubuntu-slim
     steps:
-      - uses: release-drafter/release-drafter@v6
+      - name: Run Release Drafter
+        uses: release-drafter/release-drafter@v6
+        with:
+          # Detecta automáticamente si está en 'main' o en 'release/v2.20' 
+          # y aísla los cambios de esa rama específica.
+          commitish: ${{ github.ref_name }}
+          filter-by-commitish: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
