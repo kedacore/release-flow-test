@@ -1,4 +1,4 @@
-VERSION ?= main
+VERSION ?= $(shell git rev-parse --short HEAD)
 SUFFIX ?=
 
 IMAGE_REGISTRY ?= ghcr.io
