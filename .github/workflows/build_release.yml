@@ -1,9 +1,8 @@
-name: Publish canary image to GitHub Container Registry
+name: Publish official image to GitHub Container Registry
 
 on:
   push:
-    branches: [main]
-  workflow_dispatch:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
 
 permissions:
   contents: read
@@ -12,15 +11,21 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
-      id-token: write # needed for signing the images with GitHub OIDC Token
-      attestations: write # needed for SLSA Build L3 provenance attestations
+      id-token: write # needed for signing images and release manifests with GitHub OIDC Token
+      attestations: write # needed for SLSA Build L2 provenance attestations
       artifact-metadata: write # needed for org-level linked artifacts dashboard
     outputs:
-      image-digest: ${{ steps.digest.outputs.image_digest }}
-      image-name: ${{ steps.digest.outputs.image_name }}
+      version: ${{ steps.get_version.outputs.VERSION }}
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Get the version
+        id: get_version
+        run: |
+          echo "VERSION=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up Docker Buildx
@@ -40,6 +45,7 @@ jobs:
         run: make docker-publish-multiarch
         env:
           METADATA_FILE: build-metadata.json
+          VERSION: ${{ steps.get_version.outputs.VERSION }}
 
       - name: Parse image digest
         id: digest
@@ -47,6 +53,8 @@ jobs:
           digest="$(jq -r '."containerimage.digest"' build-metadata.json)"
           echo "image_name=$(make -s print-image-controller)" >> "$GITHUB_OUTPUT"
           echo "image_digest=${digest}" >> "$GITHUB_OUTPUT"
+        env:
+          VERSION: ${{ steps.get_version.outputs.VERSION }}
 
       - name: Attest image provenance
         uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
@@ -66,3 +74,5 @@ jobs:
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
         run: make sign-images
+        env:
+          VERSION: ${{ steps.get_version.outputs.VERSION }}
