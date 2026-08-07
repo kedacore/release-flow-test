@@ -48,12 +48,12 @@ jobs:
           echo "image_name=$(make -s print-image-controller)" >> "$GITHUB_OUTPUT"
           echo "image_digest=${digest}" >> "$GITHUB_OUTPUT"
 
-      # - name: Attest image provenance
-      #   uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
-      #   with:
-      #     subject-name: ${{ steps.digest.outputs.image_name }}
-      #     subject-digest: ${{ steps.digest.outputs.image_digest }}
-      #     push-to-registry: true
+      - name: Attest image provenance
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        with:
+          subject-name: ${{ steps.digest.outputs.image_name }}
+          subject-digest: ${{ steps.digest.outputs.image_digest }}
+          push-to-registry: true
       
       # https://github.com/sigstore/cosign-installer
       - name: Install Cosign
@@ -68,18 +68,3 @@ jobs:
         run: make sign-images
         env:
           VERSION: canary
-
-  image-provenance:
-    needs: [build]
-    permissions:
-      actions: read # for detecting the Github Actions environment.
-      id-token: write # for creating OIDC tokens for signing.
-      packages: write # for uploading attestations. (https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/container/README.md#known-issues)
-    # Must be referenced by a tag. https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/container/README.md#referencing-the-slsa-generator
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v2.1.0
-    with:
-      image: ${{ needs.build.outputs.image-name }}
-      digest: ${{ needs.build.outputs.image-digest }}
-    secrets:
-      registry-username: ${{ github.repository_owner }}
-      registry-password: ${{ secrets.GITHUB_TOKEN }}
