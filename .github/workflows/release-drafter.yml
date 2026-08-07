@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-slim
     steps:
       - name: Run Release Drafter
-        uses: release-drafter/release-drafter@v6
+        uses: release-drafter/release-drafter@v7
         with:
           # Detecta automáticamente si está en 'main' o en 'release/v2.20' 
           # y aísla los cambios de esa rama específica.
