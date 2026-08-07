@@ -1,0 +1,5 @@
+Description: Add initial generator for changelog entries
+Type: feat
+Component: general
+Issues:
+  - "#123"
