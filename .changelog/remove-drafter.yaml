@@ -1,0 +1,25 @@
+# One-sentence description shown in the changelog entry.
+# Example: Add support for Foo scaler.
+Description: "Remnove drafter from the repository"
+
+# Change category used for grouping in the changelog.
+# Example: feat
+Type: "chore"
+
+# Main area/component for the entry.
+# Example: scaler
+Component: "general"
+
+# Optional subcomponent shown in parenthesis next to Component.
+# Example: operator
+Subcomponent: ""
+
+# Issue references. At least one reference in Issues or PRs is required.
+# Example: #123
+Issues:
+  - "#123"
+
+# Pull request references. Use this when there is no issue. At least one reference in Issues or PRs is required.
+# Example: #456
+PRs:
+  - "#456"
