@@ -158,6 +158,38 @@ jobs:
               body: `Cherry-pick of #${prNumber} to \`${target}\`.\n\nRequested by @${context.actor} via \`/cherry-pick\` command.`,
             });
 
+            // Carry over kind/* labels from the original PR and add a target-branch label.
+            const originalLabels = context.payload.issue.labels
+              .map(l => l.name)
+              .filter(l => l.startsWith('kind/'));
+            const branchLabel = target.replace('/', '-'); // e.g. release-v2
+            const labels = [...originalLabels, branchLabel];
+
+            // Create the branch label if it doesn't exist yet.
+            try {
+              await github.rest.issues.getLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: branchLabel,
+              });
+            } catch {
+              await github.rest.issues.createLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: branchLabel,
+                color: 'e4e669',
+              });
+            }
+
+            if (labels.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.data.number,
+                labels,
+              });
+            }
+
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
