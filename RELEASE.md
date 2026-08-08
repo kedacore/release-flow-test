@@ -6,12 +6,12 @@ This document describes how to create and manage releases, including hotfix bran
 
 Release Drafter automatically maintains a **draft release** that accumulates all merged PRs since the last published release. When a PR is merged into `main` or a `release/v*` branch, the corresponding draft is updated.
 
-Each branch gets its **own independent draft**, isolated by `filter-by-commitish`:
+Each branch gets its **own independent draft**, isolated by `filter-by-commitish`. The suggested version is calculated automatically on each push:
 
-| Branch | Draft tracks |
-|---|---|
-| `main` | Next major/minor release |
-| `release/v1` | Next patch release for v1 |
+| Branch | Draft tracks | Version bump |
+|---|---|---|
+| `main` | Next minor release | `vX.Y+1.0` |
+| `release/v1` | Next patch release for v1 | `vX.Y.Z+1` |
 
 ---
 
@@ -22,7 +22,7 @@ Each branch gets its **own independent draft**, isolated by `filter-by-commitish
 2. **Open the draft release** at [GitHub Releases](https://github.com/kedacore/release-flow-test/releases) (marked as *Draft*, targeting `main`).
 
 3. **Edit the draft**:
-   - Set the tag and title to the target version (e.g. `v1.0.0`).
+   - Verify the tag and title match the intended version (auto-calculated as next minor, e.g. `v1.1.0`).
    - Fill in the intro section (upgrade notes, highlights, link to docs, next release date).
    - Review the generated changelog for accuracy.
 
@@ -40,20 +40,20 @@ Each branch gets its **own independent draft**, isolated by `filter-by-commitish
 
 ## Creating a Hotfix Release (e.g. v1.0.1)
 
-1. **Open a PR targeting `release/v1`** with the fix. Apply a `kind/bug` label (or whichever category applies).
+1. **Open a PR targeting `main`** with the fix. Apply a `kind/bug` label (or whichever category applies).
 
-2. **Merge the PR**. Release Drafter updates the draft for `release/v1`, which only includes commits reachable from that branch since `v1.0.0`.
+2. **Merge the PR** into `main`.
 
-3. **Open the draft release** targeting `release/v1`.
-
-4. **Edit and publish** the draft as `v1.0.1`.
-
-5. **Cherry-pick the fix back to `main`** to keep both lines in sync:
+3. **Cherry-pick the fix to `release/v1`**:
    ```bash
-   git checkout main
+   git checkout release/v1
    git cherry-pick <commit-sha>
-   # open a PR or push directly depending on branch protection rules
+   git push origin release/v1
    ```
+
+4. Release Drafter updates the draft for `release/v1` on push. **Open the draft** targeting `release/v1`.
+
+5. **Edit and publish** the draft targeting `release/v1`. The version is auto-calculated as the next patch (e.g. `v1.0.1`) — verify it before publishing.
 
 ---
 
