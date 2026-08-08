@@ -15,7 +15,7 @@ template: |
 
   <!-- Edit this section before publishing: highlight notable features, upgrade notes, links to docs, next release date, etc. -->
 
-  Learn how to deploy KEDA by reading [our documentation](https://keda.sh/docs/$RESOLVED_VERSION/deploy/).
+  Learn how to deploy KEDA by reading [our documentation](https://keda.sh/docs/$RESOLVED_VERSION_MAJOR.$RESOLVED_VERSION_MINOR/deploy/).
 
   $CHANGES
 
