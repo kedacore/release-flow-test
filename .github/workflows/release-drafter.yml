@@ -60,7 +60,6 @@ jobs:
         uses: release-drafter/release-drafter@v7
         with:
           version: ${{ steps.strategy.outputs.version }}
-          tag: v${{ steps.strategy.outputs.version }}
           commitish: ${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
