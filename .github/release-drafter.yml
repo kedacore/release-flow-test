@@ -19,9 +19,16 @@ template: |
 
   $CHANGES
 
+  ## Contributors
+
+  $CONTRIBUTORS
+
   **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
 
 categories:
+  - title: "Breaking Changes"
+    labels:
+      - "kind/breaking-change"
   - title: "New"
     labels:
       - "kind/feature"
@@ -36,34 +43,12 @@ categories:
   - title: "Deprecations"
     labels:
       - "kind/deprecation"
-  - title: "Breaking Changes"
-    labels:
-      - "kind/breaking-change"
   - title: "Other"
     labels:
       - "kind/chore"
       - "kind/documentation"
       - "kind/dependencies"
       - "kind/ci"
-
-version-resolver:
-  major:
-    labels:
-      - "kind/breaking-change"
-  minor:
-    labels:
-      - "kind/feature"
-      - "kind/new-scaler"
-      - "kind/improvement"
-      - "kind/enhancement"
-  patch:
-    labels:
-      - "kind/bug"
-      - "kind/chore"
-      - "kind/deprecation"
-      - "kind/ci"
-      - "kind/documentation"
-      - "kind/dependencies"
 
 exclude-labels:
   - "skip-changelog"
