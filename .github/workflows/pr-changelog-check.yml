@@ -1,0 +1,52 @@
+name: "Lint PR"
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, labeled, unlabeled]
+
+permissions: {}
+
+env:
+  # a workaround to disable harden runner
+  STEP_SECURITY_HARDEN_RUNNER: ${{ vars.disable_harden_runner }}
+
+# PR updates can happen in quick succession leading to this
+# workflow being trigger a number of times. This limits it
+# to one run per PR.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    permissions:
+      contents: read
+      pull-requests: read
+    name: Validate PR Labels
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        if: ${{ vars.disable_harden_runner != 'true' }}
+        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2.20.1
+        with:
+          egress-policy: audit
+
+      - name: Check changelog label
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const SKIP_LABEL = 'skip-changelog';
+
+            const labels = context.payload.pull_request.labels.map(l => l.name);
+
+            if (labels.includes(SKIP_LABEL)) return;
+
+            const kindLabels = labels.filter(l => l.startsWith('kind/'));
+
+            if (kindLabels.length === 0) {
+              core.setFailed('PR must have exactly one kind/ label or skip-changelog');
+            } else if (kindLabels.length > 1) {
+              core.setFailed(
+                `PR has ${kindLabels.length} kind/ labels (${kindLabels.join(', ')}). Use exactly one.`
+              );
+            }
