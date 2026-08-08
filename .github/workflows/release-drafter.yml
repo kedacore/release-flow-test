@@ -78,14 +78,11 @@ jobs:
             -f previous_tag_name="$START_TAG" \
             --jq '.body')
 
-          # Prepend intro template
-          body="We are happy to release KEDA ${VERSION#v} 🎉
-
-<!-- Edit this section before publishing: highlight notable features, upgrade notes, links to docs, next release date, etc. -->
-
-Learn how to deploy KEDA by reading [our documentation](https://keda.sh/docs/${major}.${minor}/deploy/).
-
-${notes}"
+          # Build body via printf to avoid YAML block scalar indentation issues
+          intro="We are happy to release KEDA ${VERSION#v} 🎉"
+          comment="<!-- Edit this section before publishing: highlight notable features, upgrade notes, links to docs, next release date, etc. -->"
+          docs="Learn how to deploy KEDA by reading [our documentation](https://keda.sh/docs/${major}.${minor}/deploy/)."
+          body=$(printf '%s\n\n%s\n\n%s\n\n%s' "$intro" "$comment" "$docs" "$notes")
 
           gh release create "$VERSION" \
             --draft \
