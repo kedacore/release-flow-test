@@ -35,7 +35,26 @@ jobs:
 
       - name: Set version bump strategy
         run: |
-          bump=${{ startsWith(github.ref_name, 'release/') && 'patch' || 'minor' }}
+          git fetch --tags
+
+          if [[ "${{ github.ref_name }}" == release/* ]]; then
+            bump=patch
+            minor_prefix="${{ github.ref_name }}"
+            minor_prefix="${minor_prefix#release/}"         # e.g. v2.0
+            latest=$(git tag --list "${minor_prefix}.*" | sort -V | tail -1)
+            latest="${latest:-${minor_prefix}.0}"
+            patch=$(echo "$latest" | cut -d. -f3)
+            echo "version=${minor_prefix}.$((patch + 1))" >> "$GITHUB_OUTPUT"
+          else
+            bump=minor
+            # Only vX.Y.0 tags to ignore patch releases from release branches
+            latest=$(git tag --list 'v*' | grep -E '^v[0-9]+\.[0-9]+\.0$' | sort -V | tail -1)
+            latest="${latest:-v0.0.0}"
+            major=$(echo "$latest" | sed 's/^v//' | cut -d. -f1)
+            minor=$(echo "$latest" | cut -d. -f2)
+            echo "version=${major}.$((minor + 1)).0" >> "$GITHUB_OUTPUT"
+          fi
+
           sed "s/semver-increment: minor/semver-increment: $bump/" .github/release-drafter.yml > release-drafter-resolved.yml
 
       - name: Run Release Drafter
