@@ -80,6 +80,7 @@ jobs:
               });
               core.setFailed('PR is not merged');
             }
+            core.setOutput('title', pr.data.title);
             return pr.data.merge_commit_sha;
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -120,6 +121,7 @@ jobs:
           SUCCESS: ${{ steps.cp.outputs.success }}
           COMMIT: ${{ steps.pr.outputs.result }}
           PR_NUMBER: ${{ github.event.issue.number }}
+          PR_TITLE: ${{ steps.pr.outputs.title }}
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           script: |
@@ -150,7 +152,7 @@ jobs:
               return;
             }
 
-            const prTitle = `[cherry-pick #${prNumber}] to ${target}`;
+            const prTitle = process.env.PR_TITLE;
             const prBody = `Cherry-pick of #${prNumber} to \`${target}\`.\n\nRequested by @${context.actor} via \`/cherry-pick\` command.`;
 
             // Upsert PR: update open, or create new (closed PRs can't be reopened after force-push).

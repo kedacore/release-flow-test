@@ -1,7 +1,6 @@
 # .github/release-drafter.yml
 name-template: "v$RESOLVED_VERSION"
 tag-template: "v$RESOLVED_VERSION"
-filter-by-commitish: true
 
 # PR title convention: "**ComponentName**: Brief description"
 # e.g. "**General**: Fix nil pointer dereference in fallback"
