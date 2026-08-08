@@ -36,12 +36,12 @@ jobs:
       - name: Set version bump strategy
         run: |
           bump=${{ startsWith(github.ref_name, 'release/') && 'patch' || 'minor' }}
-          sed "s/^  default: .*/  default: $bump/" .github/release-drafter.yml > /tmp/release-drafter.yml
+          sed "s/^  default: .*/  default: $bump/" .github/release-drafter.yml > release-drafter-resolved.yml
 
       - name: Run Release Drafter
         uses: release-drafter/release-drafter@v7
         with:
-          config-name: file:/tmp/release-drafter.yml
+          config-name: file:/release-drafter-resolved.yml
           commitish: ${{ github.ref_name }}
           filter-by-commitish: true
         env:
