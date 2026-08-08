@@ -23,7 +23,6 @@ jobs:
   update-release-draft:
     permissions:
       contents: write
-      pull-requests: read
     runs-on: ubuntu-slim
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -32,11 +31,17 @@ jobs:
         with:
           egress-policy: audit
 
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set version bump strategy
+        run: |
+          bump=${{ startsWith(github.ref_name, 'release/') && 'patch' || 'minor' }}
+          sed "s/^  default: .*/  default: $bump/" .github/release-drafter.yml > /tmp/release-drafter.yml
+
       - name: Run Release Drafter
-        uses: release-drafter/release-drafter@v6
+        uses: release-drafter/release-drafter@v7
         with:
-          # Detecta automáticamente si está en 'main' o en 'release/v2.20' 
-          # y aísla los cambios de esa rama específica.
+          config-name: file:/tmp/release-drafter.yml
           commitish: ${{ github.ref_name }}
           filter-by-commitish: true
         env:

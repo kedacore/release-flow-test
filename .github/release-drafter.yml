@@ -52,3 +52,6 @@ categories:
 
 exclude-labels:
   - "skip-changelog"
+
+version-resolver:
+  default: minor
