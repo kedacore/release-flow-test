@@ -56,9 +56,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release list --json isDraft,tagName,targetCommitish \
+          gh api /repos/${{ github.repository }}/releases \
             | jq -r --arg b "${{ github.ref_name }}" \
-                '.[] | select(.isDraft == true and .targetCommitish == $b) | .tagName' \
+                '.[] | select(.draft == true and .target_commitish == $b) | .tag_name' \
             | xargs -r -I{} gh release delete {} --yes --cleanup-tag 2>/dev/null || true
 
       - name: Create draft release with generated notes
@@ -71,11 +71,13 @@ jobs:
           major=$(echo "$VERSION" | sed 's/^v//' | cut -d. -f1)
           minor=$(echo "$VERSION" | sed 's/^v//' | cut -d. -f2)
 
-          # Generate changelog body via API
+          # Generate changelog body via API; omit previous_tag_name if tag doesn't exist yet
+          notes_args=(-f tag_name="$VERSION" -f target_commitish="$BRANCH")
+          if git rev-parse "$START_TAG" >/dev/null 2>&1; then
+            notes_args+=(-f "previous_tag_name=$START_TAG")
+          fi
           notes=$(gh api /repos/${{ github.repository }}/releases/generate-notes \
-            -f tag_name="$VERSION" \
-            -f target_commitish="$BRANCH" \
-            -f previous_tag_name="$START_TAG" \
+            "${notes_args[@]}" \
             --jq '.body')
 
           # Build body via printf to avoid YAML block scalar indentation issues
