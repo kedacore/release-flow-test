@@ -42,14 +42,14 @@ jobs:
             bump=patch
             minor_prefix="${{ github.ref_name }}"
             minor_prefix="${minor_prefix#release/}"         # e.g. v2.0
-            latest=$(git tag --list "${minor_prefix}.*" --sort=-version:refname --merged HEAD | head -1)
+            latest=$(git tag --list "${minor_prefix}.*" | sort -V | tail -1)
             latest="${latest:-${minor_prefix}.0}"
             patch=$(echo "$latest" | cut -d. -f3)
             echo "version=${minor_prefix}.$((patch + 1))" >> "$GITHUB_OUTPUT"
           else
             bump=minor
-            # Only consider vX.Y.0 tags (minor releases) in main's ancestry to ignore patch releases
-            latest=$(git tag --list 'v*.*.*' --sort=-version:refname --merged HEAD | grep -E '^v[0-9]+\.[0-9]+\.0$' | head -1)
+            # Only vX.Y.0 tags to ignore patch releases from release branches
+            latest=$(git tag --list 'v*' | grep -E '^v[0-9]+\.[0-9]+\.0$' | sort -V | tail -1)
             latest="${latest:-v0.0.0}"
             major=$(echo "$latest" | sed 's/^v//' | cut -d. -f1)
             minor=$(echo "$latest" | cut -d. -f2)
