@@ -31,41 +31,33 @@ categories:
       label: "skip-changelog"
   - title: "Breaking Changes"
     exclusive: true
-    semver-increment: minor
     when:
       label: "kind/breaking-change"
   - title: "New"
     exclusive: true
-    semver-increment: minor
     when:
       labels:
         - "kind/feature"
         - "kind/new-scaler"
   - title: "Improvements"
     exclusive: true
-    semver-increment: minor
     when:
       labels:
         - "kind/improvement"
         - "kind/enhancement"
   - title: "Fixes"
     exclusive: true
-    semver-increment: minor
     when:
       label: "kind/bug"
   - title: "Deprecations"
     exclusive: true
-    semver-increment: minor
     when:
       label: "kind/deprecation"
   - title: "Other"
     exclusive: true
-    semver-increment: minor
     when:
       labels:
         - "kind/chore"
         - "kind/documentation"
         - "kind/dependencies"
         - "kind/ci"
-  - type: "version-resolver"
-    semver-increment: minor
