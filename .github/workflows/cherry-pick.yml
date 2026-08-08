@@ -35,19 +35,19 @@ jobs:
           client-id: ${{ secrets.GH_CHERRY_PICK_BOT_ID }}
           private-key: ${{ secrets.GH_CHERRY_PICK_BOT_PRIVATE_KEY }}
 
-      - name: Verify commenter has write access
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+      - name: Verify commenter is a maintainer
+        id: checkUserMember
+        uses: tspascoal/get-user-teams-membership@b2546c5affc730fd8e3d8483ae9ad3621938c2f9 # v4.0.2
         with:
-          github-token: ${{ steps.app-token.outputs.token }}
-          script: |
-            const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              username: context.actor,
-            });
-            if (!['admin', 'write'].includes(data.permission)) {
-              core.setFailed(`@${context.actor} does not have write access to this repository.`);
-            }
+          username: ${{ github.actor }}
+          team: "keda-e2e-test-executors"
+          GITHUB_TOKEN: ${{ secrets.GH_CHECKING_USER_AUTH }}
+
+      - name: Fail if not a maintainer
+        if: steps.checkUserMember.outputs.isTeamMember == 'false'
+        run: |
+          echo "::error::@${{ github.actor }} is not a member of the keda-e2e-test-executors team."
+          exit 1
 
       - name: Parse target branch
         id: parse
