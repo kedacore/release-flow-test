@@ -153,7 +153,7 @@ jobs:
             const prTitle = `[cherry-pick #${prNumber}] to ${target}`;
             const prBody = `Cherry-pick of #${prNumber} to \`${target}\`.\n\nRequested by @${context.actor} via \`/cherry-pick\` command.`;
 
-            // Upsert PR: update open, reopen closed, or create new.
+            // Upsert PR: update open, or create new (closed PRs can't be reopened after force-push).
             let pr;
             const existingOpen = await github.rest.pulls.list({
               owner: context.repo.owner, repo: context.repo.repo,
@@ -166,22 +166,10 @@ jobs:
                 title: prTitle, body: prBody,
               })).data;
             } else {
-              const existingClosed = await github.rest.pulls.list({
+              pr = (await github.rest.pulls.create({
                 owner: context.repo.owner, repo: context.repo.repo,
-                head: `${context.repo.owner}:${branch}`, base: target, state: 'closed',
-              });
-              if (existingClosed.data.length > 0) {
-                pr = (await github.rest.pulls.update({
-                  owner: context.repo.owner, repo: context.repo.repo,
-                  pull_number: existingClosed.data[0].number,
-                  state: 'open', title: prTitle, body: prBody,
-                })).data;
-              } else {
-                pr = (await github.rest.pulls.create({
-                  owner: context.repo.owner, repo: context.repo.repo,
-                  title: prTitle, head: branch, base: target, body: prBody,
-                })).data;
-              }
+                title: prTitle, head: branch, base: target, body: prBody,
+              })).data;
             }
 
             // Carry over kind/* labels to the cherry-pick PR.
