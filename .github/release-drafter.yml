@@ -66,22 +66,3 @@ version-resolver:
 
 exclude-labels:
   - "skip-changelog"
-
-# Auto-applies kind/ labels based on conventional commit title prefixes.
-# Allows release-drafter to categorize PRs that were merged without a manual label.
-autolabeler:
-  - label: "kind/feature"
-    title:
-      - '/^feat(\(.*\))?!?:/'
-  - label: "kind/bug"
-    title:
-      - '/^fix(\(.*\))?!?:/'
-  - label: "kind/documentation"
-    title:
-      - '/^docs(\(.*\))?!?:/'
-  - label: "kind/chore"
-    title:
-      - '/^(chore|refactor|test|revert)(\(.*\))?!?:/'
-  - label: "kind/ci"
-    title:
-      - '/^ci(\(.*\))?!?:/'

@@ -23,7 +23,7 @@ jobs:
   update-release-draft:
     permissions:
       contents: write
-      pull-requests: write
+      pull-requests: read
     runs-on: ubuntu-slim
     steps:
       - name: Harden the runner (Audit all outbound calls)
