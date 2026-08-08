@@ -22,24 +22,24 @@ template: |
   **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
 
 categories:
-  - title: "### New"
+  - title: "New"
     labels:
       - "kind/feature"
       - "kind/new-scaler"
-  - title: "### Improvements"
+  - title: "Improvements"
     labels:
       - "kind/improvement"
       - "kind/enhancement"
-  - title: "### Fixes"
+  - title: "Fixes"
     labels:
       - "kind/bug"
-  - title: "### Deprecations"
+  - title: "Deprecations"
     labels:
       - "kind/deprecation"
-  - title: "### Breaking Changes"
+  - title: "Breaking Changes"
     labels:
       - "kind/breaking-change"
-  - title: "### Other"
+  - title: "Other"
     labels:
       - "kind/chore"
       - "kind/documentation"
@@ -59,10 +59,11 @@ version-resolver:
   patch:
     labels:
       - "kind/bug"
-      - "bug"
       - "kind/chore"
       - "kind/deprecation"
-      - "dependencies"
+      - "kind/ci"
+      - "kind/documentation"
+      - "kind/dependencies"
 
 exclude-labels:
   - "skip-changelog"
