@@ -1,0 +1,28 @@
+changelog:
+  exclude:
+    labels:
+      - skip-changelog
+  categories:
+    - title: Breaking Changes
+      labels:
+        - kind/breaking-change
+    - title: New
+      labels:
+        - kind/feature
+        - kind/new-scaler
+    - title: Improvements
+      labels:
+        - kind/improvement
+        - kind/enhancement
+    - title: Fixes
+      labels:
+        - kind/bug
+    - title: Deprecations
+      labels:
+        - kind/deprecation
+    - title: Other
+      labels:
+        - kind/chore
+        - kind/documentation
+        - kind/dependencies
+        - kind/ci

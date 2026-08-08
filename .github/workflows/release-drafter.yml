@@ -5,18 +5,15 @@ on:
     branches:
       - main
       - 'release/v*'
-  release:
-    types: [published]
 
 permissions:
   contents: read
 
 env:
-  # a workaround to disable harden runner
   STEP_SECURITY_HARDEN_RUNNER: ${{ vars.disable_harden_runner }}
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref }}
+  group: ${{ github.workflow }}-${{ github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -33,34 +30,65 @@ jobs:
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Compute next version and bump strategy
-        id: strategy
+      - name: Compute next version and baseline tag
+        id: version
         run: |
           git fetch --tags
 
           if [[ "${{ github.ref_name }}" == release/* ]]; then
-            bump=patch
             minor_prefix="${{ github.ref_name }}"
-            minor_prefix="${minor_prefix#release/}"         # e.g. v2.0
+            minor_prefix="${minor_prefix#release/}"
             latest=$(git tag --list "${minor_prefix}.*" | sort -V | tail -1)
             latest="${latest:-${minor_prefix}.0}"
             patch=$(echo "$latest" | cut -d. -f3)
-            echo "version=${minor_prefix#v}.$((patch + 1))" >> "$GITHUB_OUTPUT"
+            echo "version=v${minor_prefix#v}.$((patch + 1))" >> "$GITHUB_OUTPUT"
+            echo "start_tag=$latest" >> "$GITHUB_OUTPUT"
           else
-            bump=minor
-            # Only vX.Y.0 tags to ignore patch releases from release branches
             latest=$(git tag --list 'v*' | grep -E '^v[0-9]+\.[0-9]+\.0$' | sort -V | tail -1)
             latest="${latest:-v0.0.0}"
             major=$(echo "$latest" | sed 's/^v//' | cut -d. -f1)
             minor=$(echo "$latest" | cut -d. -f2)
-            echo "version=${major}.$((minor + 1)).0" >> "$GITHUB_OUTPUT"
+            echo "version=v${major}.$((minor + 1)).0" >> "$GITHUB_OUTPUT"
+            echo "start_tag=$latest" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Run Release Drafter
-        uses: release-drafter/release-drafter@v7
-        with:
-          version: ${{ steps.strategy.outputs.version }}
-          tag: v${{ steps.strategy.outputs.version }}
-          commitish: ${{ github.ref_name }}
+      - name: Delete existing draft targeting this branch
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release list --json isDraft,tagName,targetCommitish \
+            | jq -r --arg b "${{ github.ref_name }}" \
+                '.[] | select(.isDraft == true and .targetCommitish == $b) | .tagName' \
+            | xargs -r -I{} gh release delete {} --yes --cleanup-tag 2>/dev/null || true
+
+      - name: Create draft release with generated notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+          START_TAG: ${{ steps.version.outputs.start_tag }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          major=$(echo "$VERSION" | sed 's/^v//' | cut -d. -f1)
+          minor=$(echo "$VERSION" | sed 's/^v//' | cut -d. -f2)
+
+          # Generate changelog body via API
+          notes=$(gh api /repos/${{ github.repository }}/releases/generate-notes \
+            -f tag_name="$VERSION" \
+            -f target_commitish="$BRANCH" \
+            -f previous_tag_name="$START_TAG" \
+            --jq '.body')
+
+          # Prepend intro template
+          body="We are happy to release KEDA ${VERSION#v} 🎉
+
+<!-- Edit this section before publishing: highlight notable features, upgrade notes, links to docs, next release date, etc. -->
+
+Learn how to deploy KEDA by reading [our documentation](https://keda.sh/docs/${major}.${minor}/deploy/).
+
+${notes}"
+
+          gh release create "$VERSION" \
+            --draft \
+            --target "$BRANCH" \
+            --title "$VERSION" \
+            --notes "$body"
