@@ -26,32 +26,38 @@ template: |
   **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
 
 categories:
+  - type: "pre-exclude"
+    when:
+      label:
+        - "skip-changelog"
   - title: "Breaking Changes"
-    labels:
-      - "kind/breaking-change"
+    when:
+      label:
+        - "kind/breaking-change"
   - title: "New"
-    labels:
-      - "kind/feature"
-      - "kind/new-scaler"
+    when:
+      label:
+        - "kind/feature"
+        - "kind/new-scaler"
   - title: "Improvements"
-    labels:
-      - "kind/improvement"
-      - "kind/enhancement"
+    when:
+      label:
+        - "kind/improvement"
+        - "kind/enhancement"
   - title: "Fixes"
-    labels:
-      - "kind/bug"
+    when:
+      label:
+        - "kind/bug"
   - title: "Deprecations"
-    labels:
-      - "kind/deprecation"
+    when:
+      label:
+        - "kind/deprecation"
   - title: "Other"
-    labels:
-      - "kind/chore"
-      - "kind/documentation"
-      - "kind/dependencies"
-      - "kind/ci"
-
-exclude-labels:
-  - "skip-changelog"
-
-version-resolver:
-  default: minor
+    when:
+      label:
+        - "kind/chore"
+        - "kind/documentation"
+        - "kind/dependencies"
+        - "kind/ci"
+  - type: "version-resolver"
+    semver-increment: minor
