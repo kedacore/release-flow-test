@@ -28,33 +28,29 @@ template: |
 categories:
   - type: "pre-exclude"
     when:
-      label:
-        - "skip-changelog"
+      label: "skip-changelog"
   - title: "Breaking Changes"
     when:
-      label:
-        - "kind/breaking-change"
+      label: "kind/breaking-change"
   - title: "New"
     when:
-      label:
+      labels:
         - "kind/feature"
         - "kind/new-scaler"
   - title: "Improvements"
     when:
-      label:
+      labels:
         - "kind/improvement"
         - "kind/enhancement"
   - title: "Fixes"
     when:
-      label:
-        - "kind/bug"
+      label: "kind/bug"
   - title: "Deprecations"
     when:
-      label:
-        - "kind/deprecation"
+      label: "kind/deprecation"
   - title: "Other"
     when:
-      label:
+      labels:
         - "kind/chore"
         - "kind/documentation"
         - "kind/dependencies"
