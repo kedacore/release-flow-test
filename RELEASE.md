@@ -4,9 +4,9 @@ This document describes how to create and manage releases, including hotfix bran
 
 ## Overview
 
-Release Drafter automatically maintains a **draft release** that accumulates all merged PRs since the last published release. When a PR is merged into `main` or a `release/v*` branch, the corresponding draft is updated.
+Release automation uses **GitHub's native release notes** (`gh api .../releases/generate-notes` + `.github/release.yml`) to maintain a **draft release** on each push to `main` or a `release/v*` branch. The existing draft for that branch is deleted and recreated with an up-to-date changelog on every push.
 
-Each branch gets its **own independent draft**, isolated by `filter-by-commitish`. The suggested version is calculated automatically on each push:
+Each branch gets its **own independent draft**, isolated by target branch:
 
 | Branch | Draft tracks | Version bump |
 |---|---|---|
@@ -26,7 +26,7 @@ Each branch gets its **own independent draft**, isolated by `filter-by-commitish
    ```
    > **Important**: create the branch BEFORE publishing the release so that the release can target the branch.
 
-3. **Open the draft release** at [GitHub Releases](https://github.com/kedacore/release-flow-test/releases). Release Drafter will have created a draft targeting `release/v1` automatically on the push in step 2.
+3. **Open the draft release** at [GitHub Releases](https://github.com/kedacore/release-flow-test/releases). The release workflow will have created a draft targeting `release/v1` automatically on the push in step 2.
 
 4. **Edit the draft**:
    - Verify the tag and title match the intended version (auto-calculated as next minor, e.g. `v1.0.0`).
@@ -46,14 +46,19 @@ Each branch gets its **own independent draft**, isolated by `filter-by-commitish
 
 2. **Merge the PR** into `main`.
 
-3. **Cherry-pick the fix to `release/v1`**:
+3. **Cherry-pick the fix to `release/v1`** — you can use the cherry-pick bot by commenting on the merged PR:
+   ```
+   /cherry-pick release/v1
+   ```
+   The bot creates a cherry-pick PR targeting `release/v1` automatically. You can also do it manually:
    ```bash
    git checkout release/v1
    git cherry-pick <commit-sha>
    git push origin release/v1
    ```
+   > Only members of the `keda-e2e-test-executors` team can trigger the bot.
 
-4. Release Drafter updates the draft for `release/v1` on push. **Open the draft** targeting `release/v1`.
+4. The release workflow regenerates the draft for `release/v1` on push. **Open the draft** targeting `release/v1`.
 
 5. **Edit and publish** the draft targeting `release/v1`. The version is auto-calculated as the next patch (e.g. `v1.0.1`) — verify it before publishing.
 
@@ -62,6 +67,21 @@ Each branch gets its **own independent draft**, isolated by `filter-by-commitish
 ## Continuing Development on main (e.g. v1.1.0)
 
 After v1.0.0 is published, all PRs merged into `main` are tracked in a new draft automatically. When ready to release v1.1.0, repeat the steps in [Creating a New Major/Minor Release](#creating-a-new-majorminor-release-eg-v100), setting the tag to `v1.1.0`.
+
+---
+
+## Cherry-pick Bot
+
+The cherry-pick bot automates backporting merged PRs to release branches.
+
+**Trigger**: comment `/cherry-pick release/vX` on a merged PR (replacing `X` with the target version).
+
+**What it does**:
+- Verifies the commenter is a member of the `keda-e2e-test-executors` GitHub team
+- Creates a branch `cherry-pick-<PR>-to-release-vX` and opens a PR targeting `release/vX`
+- Copies all `kind/*` labels from the original PR so the cherry-pick PR also passes the label check
+- Adds a `cherry-pick:vX` label to the original PR for traceability
+- Idempotent: re-running the command updates the existing cherry-pick PR
 
 ---
 
