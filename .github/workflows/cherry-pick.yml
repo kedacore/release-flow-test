@@ -104,7 +104,8 @@ jobs:
           git checkout -b "$branch" "origin/$TARGET"
 
           if git cherry-pick -x "$COMMIT"; then
-            git push origin "$branch"
+            # --force because re-running the command should overwrite the previous attempt
+            git push --force origin "$branch"
             echo "success=true" >> "$GITHUB_OUTPUT"
           else
             git cherry-pick --abort || true
@@ -149,23 +150,49 @@ jobs:
               return;
             }
 
-            const pr = await github.rest.pulls.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: `[cherry-pick #${prNumber}] to ${target}`,
-              head: branch,
-              base: target,
-              body: `Cherry-pick of #${prNumber} to \`${target}\`.\n\nRequested by @${context.actor} via \`/cherry-pick\` command.`,
-            });
+            const prTitle = `[cherry-pick #${prNumber}] to ${target}`;
+            const prBody = `Cherry-pick of #${prNumber} to \`${target}\`.\n\nRequested by @${context.actor} via \`/cherry-pick\` command.`;
 
-            // Carry over kind/* labels from the original PR and add a target-branch label.
+            // Upsert PR: update open, reopen closed, or create new.
+            let pr;
+            const existingOpen = await github.rest.pulls.list({
+              owner: context.repo.owner, repo: context.repo.repo,
+              head: `${context.repo.owner}:${branch}`, base: target, state: 'open',
+            });
+            if (existingOpen.data.length > 0) {
+              pr = (await github.rest.pulls.update({
+                owner: context.repo.owner, repo: context.repo.repo,
+                pull_number: existingOpen.data[0].number,
+                title: prTitle, body: prBody,
+              })).data;
+            } else {
+              const existingClosed = await github.rest.pulls.list({
+                owner: context.repo.owner, repo: context.repo.repo,
+                head: `${context.repo.owner}:${branch}`, base: target, state: 'closed',
+              });
+              if (existingClosed.data.length > 0) {
+                pr = (await github.rest.pulls.update({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  pull_number: existingClosed.data[0].number,
+                  state: 'open', title: prTitle, body: prBody,
+                })).data;
+              } else {
+                pr = (await github.rest.pulls.create({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  title: prTitle, head: branch, base: target, body: prBody,
+                })).data;
+              }
+            }
+
+            // Carry over kind/* labels to the cherry-pick PR.
             const originalLabels = context.payload.issue.labels
               .map(l => l.name)
               .filter(l => l.startsWith('kind/'));
-            const branchLabel = target.replace('/', '-'); // e.g. release-v2
-            const labels = [...originalLabels, branchLabel];
+            // e.g. release/v2 → cherry-pick:v2
+            const version = target.replace(/^release\//, '');
+            const branchLabel = `cherry-pick:${version}`;
 
-            // Create the branch label if it doesn't exist yet.
+            // Create the cherry-pick label if it doesn't exist yet.
             try {
               await github.rest.issues.getLabel({
                 owner: context.repo.owner,
@@ -181,18 +208,27 @@ jobs:
               });
             }
 
-            if (labels.length > 0) {
+            // Apply kind/* labels to the cherry-pick PR.
+            if (originalLabels.length > 0) {
               await github.rest.issues.addLabels({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: pr.data.number,
-                labels,
+                issue_number: pr.number,
+                labels: originalLabels,
               });
             }
+
+            // Apply cherry-pick:vX label to the original PR to track which branches were targeted.
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              labels: [branchLabel],
+            });
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: prNumber,
-              body: `✅ Cherry-pick PR created: #${pr.data.number}`,
+              body: `✅ Cherry-pick PR created: #${pr.number}`,
             });
