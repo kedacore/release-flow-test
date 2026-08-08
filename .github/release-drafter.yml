@@ -1,7 +1,6 @@
 # .github/release-drafter.yml
 name-template: "v$RESOLVED_VERSION"
 tag-template: "v$RESOLVED_VERSION"
-filter-by-commitish: true
 sort-by: "title"
 
 # PR title convention: "**ComponentName**: Brief description"
