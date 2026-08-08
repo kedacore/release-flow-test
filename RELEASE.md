@@ -19,20 +19,22 @@ Each branch gets its **own independent draft**, isolated by `filter-by-commitish
 
 1. **Merge all PRs** for the release into `main`. Each PR must have exactly one `kind/` label — this determines which section of the release notes it appears in.
 
-2. **Open the draft release** at [GitHub Releases](https://github.com/kedacore/release-flow-test/releases) (marked as *Draft*, targeting `main`).
+2. **Create the release branch** from the current `main` HEAD:
+   ```bash
+   git checkout -b release/v1 main
+   git push origin release/v1
+   ```
+   > **Important**: create the branch BEFORE publishing the release so that the release can target the branch.
 
-3. **Edit the draft**:
-   - Verify the tag and title match the intended version (auto-calculated as next minor, e.g. `v1.1.0`).
+3. **Open the draft release** at [GitHub Releases](https://github.com/kedacore/release-flow-test/releases). Release Drafter will have created a draft targeting `release/v1` automatically on the push in step 2.
+
+4. **Edit the draft**:
+   - Verify the tag and title match the intended version (auto-calculated as next minor, e.g. `v1.0.0`).
+   - Verify **Target** is set to `release/v1` (not `main`).
    - Fill in the intro section (upgrade notes, highlights, link to docs, next release date).
    - Review the generated changelog for accuracy.
 
-4. **Publish the release**. GitHub creates the `v1.0.0` tag at the current `main` HEAD.
-
-5. **Create the release branch** from the published tag:
-   ```bash
-   git checkout -b release/v1 v1.0.0
-   git push origin release/v1
-   ```
+5. **Publish the release**. GitHub creates the `v1.0.0` tag at the `release/v1` HEAD.
 
    From this point, `main` accumulates changes for the next release (v1.1.0 or v2.0.0), and `release/v1` is used only for hotfixes.
 
