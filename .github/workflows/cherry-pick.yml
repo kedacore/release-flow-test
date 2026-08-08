@@ -30,7 +30,7 @@ jobs:
 
       - name: Generate GitHub App token
         id: app-token
-        uses: actions/create-github-app-token@df432ceeef7a0b95ca6153d4a8ea1dcd24351156 # v1.11.3
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
           app-id: ${{ secrets.GH_CHERRY_PICK_BOT_ID }}
           private-key: ${{ secrets.GH_CHERRY_PICK_BOT_PRIVATE_KEY }}
