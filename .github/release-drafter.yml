@@ -2,24 +2,67 @@
 name-template: "v$RESOLVED_VERSION"
 tag-template: "v$RESOLVED_VERSION"
 
+# PR title convention: "**ComponentName**: Brief description"
+# e.g. "**General**: Fix nil pointer dereference in fallback"
+#      "**Kafka Scaler**: Add support for SASL/OAuth bearer authentication"
+# This makes $TITLE render identically to KEDA's CHANGELOG.md format.
+
+change-template: "- $TITLE ([#$NUMBER]($URL))"
+change-title-escapes: '\<*_&'
+
 template: |
-  ## Cambios en esta versión
+  We are happy to release KEDA $RESOLVED_VERSION 🎉
+
+  <!-- Edit this section before publishing: highlight notable features, upgrade notes, links to docs, next release date, etc. -->
+
+  Learn how to deploy KEDA by reading [our documentation](https://keda.sh/docs/$RESOLVED_VERSION/deploy/).
+
   $CHANGES
 
+  **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
+
 categories:
-  - title: "🚀 Nuevas Funcionalidades"
-    labels: ["enhancement", "feat"]
-  - title: "🐛 Bug Fixes"
-    labels: ["bug", "fix"]
-  - title: "📦 Otros cambios"
-    labels: ["chore", "deps", "documentation"]
+  - title: "### New"
+    labels:
+      - "kind/feature"
+      - "kind/new-scaler"
+  - title: "### Improvements"
+    labels:
+      - "kind/improvement"
+      - "kind/enhancement"
+  - title: "### Fixes"
+    labels:
+      - "kind/bug"
+  - title: "### Deprecations"
+    labels:
+      - "kind/deprecation"
+  - title: "### Breaking Changes"
+    labels:
+      - "kind/breaking-change"
+  - title: "### Other"
+    labels:
+      - "kind/chore"
+      - "kind/documentation"
+      - "kind/dependencies"
+      - "kind/ci"
 
 version-resolver:
   major:
-    labels: ["breaking-change"]
+    labels:
+      - "kind/breaking-change"
   minor:
-    labels: ["enhancement", "feat"]
+    labels:
+      - "kind/feature"
+      - "kind/new-scaler"
+      - "kind/improvement"
+      - "kind/enhancement"
   patch:
-    labels: ["bug", "fix", "chore", "deps"]
+    labels:
+      - "kind/bug"
+      - "bug"
+      - "kind/chore"
+      - "kind/deprecation"
+      - "dependencies"
 
-exclude-labels: ["skip-changelog"]
+exclude-labels:
+  - "skip-changelog"
