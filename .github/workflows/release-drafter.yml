@@ -45,7 +45,7 @@ jobs:
             latest=$(git tag --list "${minor_prefix}.*" | sort -V | tail -1)
             latest="${latest:-${minor_prefix}.0}"
             patch=$(echo "$latest" | cut -d. -f3)
-            echo "version=${minor_prefix}.$((patch + 1))" >> "$GITHUB_OUTPUT"
+            echo "version=${minor_prefix#v}.$((patch + 1))" >> "$GITHUB_OUTPUT"
           else
             bump=minor
             # Only vX.Y.0 tags to ignore patch releases from release branches
@@ -56,12 +56,9 @@ jobs:
             echo "version=${major}.$((minor + 1)).0" >> "$GITHUB_OUTPUT"
           fi
 
-          sed "s/semver-increment: minor/semver-increment: $bump/" .github/release-drafter.yml > release-drafter-resolved.yml
-
       - name: Run Release Drafter
         uses: release-drafter/release-drafter@v7
         with:
-          config-name: file:/release-drafter-resolved.yml
           version: ${{ steps.strategy.outputs.version }}
           commitish: ${{ github.ref_name }}
         env:
