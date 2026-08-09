@@ -33,4 +33,6 @@ commit_parsers = [
   { field = "remote.pr_labels", pattern = "kind/documentation",   group = "<!-- 5 -->Other" },
   { field = "remote.pr_labels", pattern = "kind/dependencies",    group = "<!-- 5 -->Other" },
   { field = "remote.pr_labels", pattern = "kind/ci",              group = "<!-- 5 -->Other" },
+  # fallback for cherry-picks and commits where GitHub PR label lookup fails
+  { message = ".*", group = "<!-- 6 -->Unlabeled" },
 ]
