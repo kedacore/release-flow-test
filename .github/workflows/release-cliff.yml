@@ -1,11 +1,10 @@
-name: Release Drafter
+name: Release Notes (git-cliff)
 
 on:
-  workflow_dispatch: # disabled: replaced by release-cliff.yml for testing git-cliff
-  # push:
-  #   branches:
-  #     - main
-  #     - 'release/v*'
+  push:
+    branches:
+      - main
+      - 'release/v*'
 
 permissions:
   contents: read
@@ -30,6 +29,8 @@ jobs:
           egress-policy: audit
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0  # git-cliff needs full history to resolve commits
 
       - name: Compute next version and baseline tag
         id: version
@@ -62,30 +63,48 @@ jobs:
                 '.[] | select(.draft == true and .target_commitish == $b) | .tag_name' \
             | xargs -r -I{} gh release delete {} --yes --cleanup-tag 2>/dev/null || true
 
-      - name: Create draft release with generated notes
+      - name: Install git-cliff
+        uses: taiki-e/install-action@b1fdcaa58e7680bef4f9af0b328c9db4d24a29ca # git-cliff
+        with:
+          tool: git-cliff
+
+      - name: Generate release notes with git-cliff
+        id: notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
+          VERSION: ${{ steps.version.outputs.version }}
+          START_TAG: ${{ steps.version.outputs.start_tag }}
+        run: |
+          if git rev-parse "$START_TAG" >/dev/null 2>&1; then
+            range="${START_TAG}..HEAD"
+          else
+            range=""
+          fi
+
+          changelog=$(git-cliff $range \
+            --config .github/cliff.toml \
+            --tag "$VERSION" \
+            --strip all)
+
+          echo "changelog<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$changelog" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Create draft release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.version.outputs.version }}
-          START_TAG: ${{ steps.version.outputs.start_tag }}
           BRANCH: ${{ github.ref_name }}
+          CHANGELOG: ${{ steps.notes.outputs.changelog }}
         run: |
           major=$(echo "$VERSION" | sed 's/^v//' | cut -d. -f1)
           minor=$(echo "$VERSION" | sed 's/^v//' | cut -d. -f2)
 
-          # Generate changelog body via API; omit previous_tag_name if tag doesn't exist yet
-          notes_args=(-f tag_name="$VERSION" -f target_commitish="$BRANCH")
-          if git rev-parse "$START_TAG" >/dev/null 2>&1; then
-            notes_args+=(-f "previous_tag_name=$START_TAG")
-          fi
-          notes=$(gh api /repos/${{ github.repository }}/releases/generate-notes \
-            "${notes_args[@]}" \
-            --jq '.body')
-
-          # Build body via printf to avoid YAML block scalar indentation issues
           intro="We are happy to release KEDA ${VERSION#v} 🎉"
           comment="<!-- Edit this section before publishing: highlight notable features, upgrade notes, links to docs, next release date, etc. -->"
           docs="Learn how to deploy KEDA by reading [our documentation](https://keda.sh/docs/${major}.${minor}/deploy/)."
-          body=$(printf '%s\n\n%s\n\n%s\n\n%s' "$intro" "$comment" "$docs" "$notes")
+          body=$(printf '%s\n\n%s\n\n%s\n\n%s' "$intro" "$comment" "$docs" "$CHANGELOG")
 
           gh release create "$VERSION" \
             --draft \
