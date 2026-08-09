@@ -84,8 +84,7 @@ jobs:
             range=""
           fi
 
-          # temporary: print verbose debug to CI logs
-          git-cliff $range --config .github/cliff.toml --tag "$VERSION" --strip all -vv > /dev/null || true
+          [[ "${RUNNER_DEBUG}" == "1" ]] && git-cliff $range --config .github/cliff.toml --tag "$VERSION" --strip all -vv > /dev/null || true
 
           changelog=$(git-cliff $range \
             --config .github/cliff.toml \
