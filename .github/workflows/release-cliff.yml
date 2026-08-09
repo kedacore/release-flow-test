@@ -75,6 +75,7 @@ jobs:
           GITHUB_REPO: ${{ github.repository }}
           VERSION: ${{ steps.version.outputs.version }}
           START_TAG: ${{ steps.version.outputs.start_tag }}
+          BRANCH: ${{ github.ref_name }}
         run: |
           if git rev-parse "$START_TAG" >/dev/null 2>&1; then
             # use branch ref instead of HEAD so git-cliff fetches commits from this branch via API (PR #1086)
