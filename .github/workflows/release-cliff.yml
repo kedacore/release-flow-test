@@ -77,7 +77,8 @@ jobs:
           START_TAG: ${{ steps.version.outputs.start_tag }}
         run: |
           if git rev-parse "$START_TAG" >/dev/null 2>&1; then
-            range="${START_TAG}..HEAD"
+            # use branch ref instead of HEAD so git-cliff fetches commits from this branch via API (PR #1086)
+            range="${START_TAG}..${BRANCH}"
           else
             range=""
           fi
