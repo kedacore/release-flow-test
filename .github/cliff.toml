@@ -9,8 +9,7 @@ body = """
 {% for group, commits in commits | group_by(attribute="group") -%}
 ## {{ group | striptags | trim }}
 {% for commit in commits -%}
-- {% if commit.remote.pr_number %}([#{{ commit.remote.pr_number }}](https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}/pull/{{ commit.remote.pr_number }})) {% endif -%}
-**{{ commit.remote.pr_title | default(value=commit.message) | trim }}**{% if commit.remote.username %} ([@{{ commit.remote.username }}](https://github.com/{{ commit.remote.username }})){% endif %}
+- [`{{ commit.id | truncate(length=7, end="") }}`](https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}/commit/{{ commit.id }}) : {{ commit.remote.pr_title | default(value=commit.message) | trim }}{% if commit.remote.pr_number %} ([#{{ commit.remote.pr_number }}](https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}/pull/{{ commit.remote.pr_number }})){% endif %}{% if commit.remote.username %} (@{{ commit.remote.username }}){% endif %}
 {% endfor %}
 {% endfor -%}
 """

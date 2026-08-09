@@ -68,7 +68,7 @@ jobs:
         with:
           tool: git-cliff
 
-      - name: Generate release notes with git-cliff
+      - name: Generate release notes
         id: notes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
