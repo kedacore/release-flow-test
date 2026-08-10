@@ -41,17 +41,17 @@ Each branch gets its **own independent draft**, isolated by target branch:
 
 2. **Merge the PR** into `main`.
 
-3. **Cherry-pick the fix to the matching release branch (`release/vX.Y`)** — you can use the cherry-pick bot by commenting on the merged PR:
+3. **Cherry-pick the fix to the matching release branch (`release/vX.Y`)** — you can use the cherry-pick bot by adding a trigger label to the merged PR:
    ```
-   /cherry-pick release/v1.0
+   cherry-pick/v1.0
    ```
-   The bot creates a cherry-pick PR targeting that release branch automatically. You can also do it manually:
+   The bot creates a cherry-pick PR targeting that release branch automatically and then swaps the trigger label for a confirmation label (`cherry-picked/v1.0`). You can also do it manually:
    ```bash
    git checkout release/v1.0
    git cherry-pick <commit-sha>
    git push origin release/v1.0
    ```
-   > Only members of the `keda-e2e-test-executors` team can trigger the bot.
+
 
 4. The release workflow regenerates the draft for the release branch on push. **Open the draft** targeting `release/vX.Y`.
 
@@ -69,14 +69,13 @@ After v1.0.0 is published, all PRs merged into `main` are tracked in a new draft
 
 The cherry-pick bot automates backporting merged PRs to release branches.
 
-**Trigger**: comment `/cherry-pick release/vX` on a merged PR (replacing `X` with the target version).
+**Trigger**: add label `cherry-pick/vX.Y` on a merged PR.
 
 **What it does**:
-- Verifies the commenter is a member of the `keda-e2e-test-executors` GitHub team
-- Creates a branch `cherry-pick-<PR>-to-release-vX` and opens a PR targeting `release/vX`
+- Creates a branch `cherry-pick-<PR>-to-release-vX-Y` and opens a PR targeting `release/vX.Y`
 - Copies all `kind/*` labels from the original PR so the cherry-pick PR also passes the label check
-- Adds a `cherry-pick:vX` label to the original PR for traceability
-- Idempotent: re-running the command updates the existing cherry-pick PR
+- On success, replaces `cherry-pick/vX.Y` with `cherry-picked/vX.Y` on the original PR
+- Idempotent: re-running the workflow updates the existing cherry-pick PR
 
 ---
 
