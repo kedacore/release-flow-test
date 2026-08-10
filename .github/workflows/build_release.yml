@@ -19,6 +19,37 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Create release branch for minor .0
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          IFS='.' read -r major minor patch <<< "$version"
+
+          if [[ -z "$major" || -z "$minor" || -z "$patch" ]]; then
+            echo "Invalid tag format: ${GITHUB_REF_NAME}"
+            exit 1
+          fi
+
+          branch="release/v${major}.${minor}"
+
+          if [[ "$patch" != "0" ]]; then
+            echo "Skipping branch creation for non-minor tag ${GITHUB_REF_NAME}."
+            exit 0
+          fi
+
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+            echo "Branch ${branch} already exists."
+            exit 0
+          fi
+
+          git push origin "${GITHUB_SHA}:refs/heads/${branch}"
+          echo "Created branch ${branch} from ${GITHUB_SHA}."
   build:
     runs-on: ubuntu-latest
     permissions:
