@@ -107,14 +107,14 @@ The `Lint PR / Validate PR Metadata` check enforces this and blocks merge if no 
 To produce release notes consistent with KEDA's changelog format, PR titles should follow this pattern:
 
 ```
-**ComponentName**: Brief description of the change
+ComponentName: Brief description of the change
 ```
 
 Examples:
 ```
-**General**: Fix nil pointer dereference in fallback
-**Kafka Scaler**: Add support for SASL/OAuth bearer authentication
-**CI**: Replace stale bot with GitHub Actions stale action
+General: Fix nil pointer dereference in fallback
+Kafka Scaler: Add support for SASL/OAuth bearer authentication
+CI: Replace stale bot with GitHub Actions stale action
 ```
 
 This makes each entry in the release notes render as:
@@ -122,5 +122,7 @@ This makes each entry in the release notes render as:
 ```
 - **Kafka Scaler**: Add support for SASL/OAuth bearer authentication (#42)
 ```
+
+The release notes renderer bolds the component automatically, so PR titles can stay plain text.
 
 The same `Lint PR / Validate PR Metadata` check enforces this title format and re-runs when a PR title is edited.
