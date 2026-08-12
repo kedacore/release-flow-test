@@ -17,7 +17,7 @@ jobs:
   # Job 1: Check if the PR has relevant labels  
   precheck:
     name: Precheck Labels
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
     permissions:
       pull-requests: read
     outputs:
@@ -37,7 +37,7 @@ jobs:
     name: Validate PR Metadata
     needs: precheck
     if: ${{ needs.precheck.outputs.has_changelog_label == 'true' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
     permissions:
       contents: read
       pull-requests: read
