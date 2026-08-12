@@ -78,12 +78,12 @@ jobs:
             const invalidLabels = kindLabels.filter(l => !VALID_LABELS.has(l));
 
             if (kindLabels.length === 0) {
-              core.setFailed(
-                `PR must have exactly one valid changelog label. Valid labels: ${[...VALID_LABELS].join(', ')}`
+              core.setNeutral(
+                `Waiting for a maintainer to add one changelog label. Valid labels: ${[...validLabels].join(', ')}`
               );
             } else if (invalidLabels.length > 0) {
               core.setFailed(
-                `Unknown label(s): ${invalidLabels.join(', ')}. Valid labels: ${[...VALID_LABELS].filter(l => l !== 'skip-changelog').join(', ')}`
+                `Unknown label(s): ${invalidLabels.join(', ')}. Valid labels: ${[...validLabels].filter((label) => label !== 'skip-changelog').join(', ')}`
               );
             } else if (kindLabels.length > 1) {
               core.setFailed(
