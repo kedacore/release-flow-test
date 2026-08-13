@@ -23,6 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      issues: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -50,6 +51,14 @@ jobs:
 
           git push origin "${GITHUB_SHA}:refs/heads/${branch}"
           echo "Created branch ${branch} from ${GITHUB_SHA}."
+
+          label="cherry-pick/v${major}.${minor}"
+          gh label create "$label" \
+            --description "Backport merged pull requests to ${branch}" \
+            --color "1D76DB" \
+            --force
+        env:
+          GH_TOKEN: ${{ github.token }}
   build:
     runs-on: ubuntu-latest
     permissions:
